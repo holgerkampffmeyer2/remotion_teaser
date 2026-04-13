@@ -8,7 +8,11 @@ const OUT_DIR = path.join(__dirname, '..', 'out');
 
 const DEFAULT_CONFIG = {
   title: 'DJ Hulk Sunday House Mix',
-  subtitle: 'Checkout the full hour mix on Mixcloud'
+  subtitle: 'Checkout the full hour mix on Mixcloud',
+  formats: {
+    youtube: true,
+    instagram: true
+  }
 };
 
 function loadConfig() {
@@ -54,16 +58,6 @@ function matchMp3Png(mp3s, pngs) {
   return pairs;
 }
 
-function getAudioDuration(audioFile) {
-  try {
-    const output = execSync(`ffprobe -i "${path.join(PUBLIC_DIR, audioFile)}" -show_entries format=duration -of default=noprint_wrappers=1:nokey=1`, { encoding: 'utf8' });
-    return parseFloat(output.trim());
-  } catch (e) {
-    console.error('Error getting audio duration:', e.message);
-    return 0;
-  }
-}
-
 function createAudioClip(originalMp3, mixNumber, offsetSeconds) {
   const clipFileName = `teaser_audio_${mixNumber}.mp3`;
   const clipPath = path.join(PUBLIC_DIR, clipFileName);
@@ -85,32 +79,31 @@ function createAudioClip(originalMp3, mixNumber, offsetSeconds) {
   }
 }
 
-function renderVideo(mixNumber, audioFile, imageFile, config) {
-  const outputFile = `DJ Hulk - Mix${mixNumber}_teaser.mp4`;
+function renderVideo(mixNumber, audioFile, imageFile, config, format) {
+  const isInstagram = format === 'instagram';
+  const compositionId = isInstagram ? 'TeaserCinematicPremiumInstagram' : 'TeaserCinematicPremium';
+  const outputFile = isInstagram 
+    ? `DJ Hulk - Mix${mixNumber}_teaser_insta.mp4`
+    : `DJ Hulk - Mix${mixNumber}_teaser.mp4`;
   
-  const env = {
-    ...process.env,
-    TEASER_AUDIO_FILE: audioFile,
-    TEASER_IMAGE_FILE: imageFile,
-    TEASER_TITLE: config.title,
-    TEASER_SUBTITLE: config.subtitle
+  const baseProps = {
+    audioFile,
+    imageFile,
+    title: config.title,
+    subtitle: config.subtitle,
+    format
   };
   
   const args = [
-    'npx', 'remotion', 'render', 'TeaserCinematicPremium',
+    'npx', 'remotion', 'render', compositionId,
     '--output-dir', OUT_DIR,
-    '--props', JSON.stringify(JSON.stringify({
-      audioFile,
-      imageFile,
-      title: config.title,
-      subtitle: config.subtitle
-    }))
+    '--props', JSON.stringify(JSON.stringify(baseProps))
   ];
   
   try {
-    execSync(args.join(' '), { stdio: 'inherit', env });
+    execSync(args.join(' '), { stdio: 'inherit' });
     
-    const outputPath = path.join(OUT_DIR, 'TeaserCinematicPremium.mp4');
+    const outputPath = path.join(OUT_DIR, `${compositionId}.mp4`);
     const finalPath = path.join(OUT_DIR, outputFile);
     
     if (fs.existsSync(outputPath)) {
@@ -118,7 +111,7 @@ function renderVideo(mixNumber, audioFile, imageFile, config) {
       console.log(`Video rendered: ${outputFile}`);
     }
   } catch (e) {
-    console.error('Error rendering video:', e.message);
+    console.error(`Error rendering ${format} video:`, e.message);
   }
 }
 
@@ -126,7 +119,11 @@ function main() {
   console.log('=== Teaser Build Script ===\n');
   
   const config = loadConfig();
-  console.log('Config loaded:', config);
+  console.log('Config loaded:', {
+    title: config.title,
+    subtitle: config.subtitle,
+    formats: config.formats
+  });
   
   const { mp3s, pngs } = findFilesInPublic();
   console.log(`Found ${mp3s.length} MP3s, ${pngs.length} PNGs`);
@@ -148,7 +145,15 @@ function main() {
     const audioFile = createAudioClip(pair.mp3, pair.number, offset);
     if (!audioFile) continue;
     
-    renderVideo(pair.number, audioFile, pair.png, config);
+    if (config.formats.youtube) {
+      console.log('\n--- Rendering YouTube (1920x1080) ---');
+      renderVideo(pair.number, audioFile, pair.png, config, 'youtube');
+    }
+    
+    if (config.formats.instagram) {
+      console.log('\n--- Rendering Instagram (1080x1920) ---');
+      renderVideo(pair.number, audioFile, pair.png, config, 'instagram');
+    }
   }
   
   console.log('\n=== Done ===');

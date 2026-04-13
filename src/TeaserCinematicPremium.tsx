@@ -15,6 +15,7 @@ export type TeaserProps = {
 	imageFile: string;
 	title: string;
 	subtitle: string;
+	format: 'youtube' | 'instagram';
 };
 
 const CONFIG = {
@@ -27,6 +28,13 @@ const CONFIG = {
 	waveFrequency: 8,
 	barCount: 64,
 	colorVariant: 0,
+};
+
+const INSTAGRAM_CONFIG = {
+	titleSize: 72,
+	subtitleSize: 24,
+	visualizerMultiplier: 55,
+	barCount: 64,
 };
 
 const COLORS = [
@@ -52,16 +60,19 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 	imageFile,
 	title,
 	subtitle,
+	format,
 }) => {
 	const frame = useCurrentFrame();
-	const {fps} = useVideoConfig();
+	const {fps, width, height} = useVideoConfig();
 	const audioData = useAudioData(staticFile(audioFile));
+
+	const isInstagram = format === 'instagram';
 
 	const bgZoom = interpolate(Math.sin(frame / 60), [-1, 1], [1.0, 1.08], {
 		extrapolateRight: 'clamp',
 	});
 
-	const textDrift = (frame / 600) * 150;
+	const textDrift = (frame / 600) * (isInstagram ? 80 : 150);
 
 	const textZoom = interpolate(Math.sin(frame / 60), [-1, 1], [1, 1.04], {
 		extrapolateRight: 'clamp',
@@ -74,7 +85,7 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 		extrapolateRight: 'clamp',
 	});
 
-	const barCount = CONFIG.barCount;
+	const barCount = isInstagram ? INSTAGRAM_CONFIG.barCount : CONFIG.barCount;
 	let bars: number[] = Array.from({length: barCount}, () => 0.06);
 	
 	const beatPhase = frame % 60;
@@ -91,6 +102,19 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 	}
 
 	const colors = COLORS[CONFIG.colorVariant];
+
+	const titleSize = isInstagram ? INSTAGRAM_CONFIG.titleSize : CONFIG.titleSize;
+	const subtitleSize = isInstagram ? INSTAGRAM_CONFIG.subtitleSize : CONFIG.subtitleSize;
+	const visualizerMultiplier = isInstagram ? INSTAGRAM_CONFIG.visualizerMultiplier : CONFIG.visualizerMultiplier;
+
+	const textBottom = isInstagram ? 280 : 108;
+	const textPadding = isInstagram ? '0 60px' : '0 90px';
+	const textMaxWidth = isInstagram ? 900 : 1320;
+	const equalizerBottom = isInstagram ? 280 : 34;
+	const equalizerWidth = isInstagram ? '90%' : '82%';
+	const equalizerMaxWidth = isInstagram ? 900 : 1180;
+	const equalizerHeight = isInstagram ? 100 : 82;
+	const equalizerGap = isInstagram ? 3 : 4;
 
 	return (
 		<AbsoluteFill
@@ -143,21 +167,22 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 					position: 'absolute',
 					left: 0,
 					right: 0,
-					bottom: 108,
-					padding: '0 90px',
+					bottom: textBottom,
+					padding: textPadding,
 				}}
 			>
 				<div
 					style={{
-						maxWidth: 1320,
+						maxWidth: textMaxWidth,
 						margin: '0 auto',
 						color: 'white',
+						textAlign: isInstagram ? 'center' : 'left',
 						transform: `translateX(${textDrift}px) scale(${textZoom})`,
 					}}
 				>
 					<div
 						style={{
-							fontSize: CONFIG.titleSize,
+							fontSize: titleSize,
 							fontWeight: 800,
 							letterSpacing: '-0.055em',
 							lineHeight: 0.94,
@@ -171,7 +196,7 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 					<div
 						style={{
 							marginTop: 22,
-							fontSize: CONFIG.subtitleSize,
+							fontSize: subtitleSize,
 							fontWeight: 400,
 							letterSpacing: '0.01em',
 							color: 'rgba(255,255,255,0.88)',
@@ -186,14 +211,14 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 				style={{
 					position: 'absolute',
 					left: '50%',
-					bottom: 34,
+					bottom: equalizerBottom,
 					transform: 'translateX(-50%)',
-					width: '82%',
-					maxWidth: 1180,
-					height: 82,
+					width: equalizerWidth,
+					maxWidth: equalizerMaxWidth,
+					height: equalizerHeight,
 					display: 'flex',
 					alignItems: 'flex-end',
-					gap: 4,
+					gap: equalizerGap,
 					opacity: 0.92,
 					filter: 'drop-shadow(0 0 16px rgba(0,190,255,0.26))',
 				}}
@@ -202,7 +227,7 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
 					const barIndex = i / barCount;
 					const freqBoost = Math.sin(barIndex * Math.PI) * 0.5 + 0.5;
 					const baseWave = Math.sin(frame / (CONFIG.waveFrequency * 2) + i * 0.5) * 15;
-					const heightBar = Math.max(6, v * CONFIG.visualizerMultiplier * (0.3 + freqBoost * 0.7) + baseWave + 20);
+					const heightBar = Math.max(6, v * visualizerMultiplier * (0.3 + freqBoost * 0.7) + baseWave + 20);
 					return (
 						<div
 							key={i}

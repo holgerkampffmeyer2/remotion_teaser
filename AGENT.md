@@ -1,75 +1,74 @@
 # Teaser-Video Generierung - Anleitung
 
 ## Ziel
-Erzeuge ein 20-Sekunden-Teaser-Video aus dem Bild und MP3 im Ordner `public/`.
+Erzeuge 20-Sekunden-Teaser-Videos aus MP3/PNG-Dateien im Ordner `public/`.
 
-## Schritte
-
-### 1. Audio analysieren
-- MP3: `public/DJ Hulk Mix-178-Tech House.mp3`
-- Dauer: 3628 Sekunden (~60 Min)
-- BPM: 128 (Tech House Standard)
-- 1 Bar = 4 Beats = 60 Frames (bei 30fps)
-
-### 2. Zufälligen Audio-Offset wählen
-- Berechne zufällige Startposition zwischen 30-60 Sekunden
-- Schnitt mit ffmpeg: `ffmpeg -i original.mp3 -ss STARTSEKUNDEN -t 20 -c copy teaser_audio.mp3`
-- Dies stellt sicher, dass der Teaser nicht im Intro beginnt
-
-### 3. Vorlage anpassen (`src/TeaserCinematicPremium.tsx`)
-
-**Dateipfade korrigieren:**
-```tsx
-Audio src={staticFile('teaser_audio.mp3')}
-Img src={staticFile('Mixcloud Post Mix178.png')}
-```
-
-**Aktuelle Animationen:**
-
-| Effekt | Beschreibung | Parameter |
-|--------|---------------|------------|
-| Hintergrund-Pulsieren | Langsamer rhythmischer Zoom (1.0 → 1.08) alle 60 Frames | `bgZoom = interpolate(Math.sin(frame / 60), [-1, 1], [1.0, 1.08])` |
-| Text-Drift | Langsames Wandern nach rechts (150px über 20s) | `textDrift = (frame / 600) * 150` |
-| Text-Zoom | Rythmischer Zoom-Effekt (1.0 → 1.04) alle 60 Frames | `textZoom = interpolate(Math.sin(frame / 60), [-1, 1], [1, 1.04])` |
-| Equalizer | Frequenzbasierte Visualisierung mit sanfter Wellenbewegung | Siehe unten |
-
-### 4. Equalizer-Implementation
-
-```typescript
-{bars.map((v, i) => {
-  const barIndex = i / barCount;
-  // Frequenzverteilung: Bass in der Mitte, Höhen außen
-  const freqBoost = Math.sin(barIndex * Math.PI) * 0.5 + 0.5;
-  // Sanfte Wellenbewegung
-  const baseWave = Math.sin(frame / (CONFIG.waveFrequency * 2) + i * 0.5) * 15;
-  // Bar-Höhe berechnen
-  const heightBar = Math.max(6, v * CONFIG.visualizerMultiplier * (0.3 + freqBoost * 0.7) + baseWave + 20);
-  return <div ... />;
-})}
-```
-
-### 5. Zufällige Variationen
-
-Die Zufallswerte wurden temporär deaktiviert - aktuell fixierte Werte:
-- `barCount: 64`
-- `visualizerMultiplier: 70`
-- `waveFrequency: 8`
-- `colorVariant: 0` (Cyan→Blau→Lila)
-
-### 6. Video rendern
+## Schnellstart
 
 ```bash
-npm run build -- TeaserCinematicPremium --output-dir out
+npm run teaser
 ```
 
-**Output umbenennen:**
-```bash
-mv out/TeaserCinematicPremium.mp4 "out/DJ Hulk Mix-178-Tech House_teaser.mp4"
+Dies erstellt für jedes MP3/PNG-Paar in `public/` ein Teaser-Video.
+
+## Dateistruktur
+
 ```
+public/
+├── DJ Hulk - Mix176_Tech House.mp3   # Quelldatei (wird nicht getrackt)
+├── Mixcloud Post Mix176.png          # Cover-Bild (wird nicht getrackt)
+└── teaser_audio_176.mp3               # Generierter Audio-Clip (wird getrackt)
+
+config/
+└── teaser-config.json                # Texte für das Video
+
+out/
+└── DJ Hulk - Mix176_teaser.mp4      # Output
+```
+
+## Konfiguration
+
+Bearbeite `config/teaser-config.json`:
+
+```json
+{
+  "title": "DJ Hulk Sunday House Mix",
+  "subtitle": "Checkout the full hour mix on Mixcloud"
+}
+```
+
+## Funktionsweise
+
+### 1. Matching-Logik
+- Script sucht alle MP3 und PNG in `public/`
+- Paart sie anhand der Nummer im Dateinamen (Mix176 ↔ Mix176)
+- Nur passende Paare werden verarbeitet
+
+### 2. Audio-Verarbeitung
+- Zufälliger Offset zwischen 30-60 Sekunden
+- FFmpeg erstellt 20s Clip: `public/teaser_audio_{NUM}.mp3`
+
+### 3. Video-Rendering
+- Verwendet `TeaserCinematicPremium` Komponente
+- Props werden automatisch übergeben:
+  - `audioFile`: `teaser_audio_{NUM}.mp3`
+  - `imageFile`: `Mixcloud Post Mix{NUM}.png`
+  - `title`: Aus Config
+  - `subtitle`: Aus Config
 
 ## Technische Details
 
-- **Auflösung**: 1920×1080
-- **Framerate**: 30fps (600 Frames für 20s)
-- **Codec**: h264
-- **Audio**: 20s Clip ab zufälliger Position (z.B. 35s)
+| Parameter | Wert |
+|-----------|------|
+| Auflösung | 1920×1080 |
+| Framerate | 30fps |
+| Dauer | 20s (600 Frames) |
+| Codec | h264 |
+
+## Manuelles Rendering
+
+Falls du nur ein einzelnes Video rendern möchtest:
+
+```bash
+npm run build -- TeaserCinematicPremium --output-dir out --props '{"audioFile":"teaser_audio_176.mp3","imageFile":"Mixcloud Post Mix176.png","title":"Titel","subtitle":"Subtitel"}'
+```

@@ -15,7 +15,9 @@ public/*.png
 public/*.jpg
 public/*.jpeg
 public/*.gif
-public/teaser_audio.mp3
+
+# Generated teaser audio (keep these in git for reproducibility)
+public/teaser_audio_*.mp3
 
 # Video outputs
 *.mp4
