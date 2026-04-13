@@ -4,20 +4,21 @@ import {
 	Audio,
 	Img,
 	interpolate,
-	spring,
 	staticFile,
 	useCurrentFrame,
 	useVideoConfig,
 } from 'remotion';
 import {useAudioData, visualizeAudio} from '@remotion/media-utils';
 
-const randomInRange = (min: number, max: number): number =>
-	min + Math.random() * (max - min);
+export type TeaserProps = {
+	audioFile: string;
+	imageFile: string;
+	title: string;
+	subtitle: string;
+};
 
-const barCountOptions = [16, 32, 64, 128];
 const CONFIG = {
 	bgZoomEnd: 1.1,
-	driftRange: 0,
 	vignetteMin: 0.6,
 	vignetteMax: 0.8,
 	titleSize: 88,
@@ -46,10 +47,15 @@ const COLORS = [
 	},
 ];
 
-export const TeaserCinematicPremium: React.FC = () => {
+export const TeaserCinematicPremium: React.FC<TeaserProps> = ({
+	audioFile,
+	imageFile,
+	title,
+	subtitle,
+}) => {
 	const frame = useCurrentFrame();
-	const {width, height, fps} = useVideoConfig();
-	const audioData = useAudioData(staticFile('teaser_audio.mp3'));
+	const {fps} = useVideoConfig();
+	const audioData = useAudioData(staticFile(audioFile));
 
 	const bgZoom = interpolate(Math.sin(frame / 60), [-1, 1], [1.0, 1.08], {
 		extrapolateRight: 'clamp',
@@ -95,17 +101,17 @@ export const TeaserCinematicPremium: React.FC = () => {
 				opacity: fadeOut,
 			}}
 		>
-			<Audio src={staticFile('teaser_audio.mp3')} />
+			<Audio src={staticFile(audioFile)} />
 			<AbsoluteFill
 				style={{
 					transform: `scale(${bgZoom})`,
 				}}
 			>
 				<Img
-					src={staticFile('Mixcloud Post Mix178.png')}
+					src={staticFile(imageFile)}
 					style={{
-						width,
-						height,
+						width: '100%',
+						height: '100%',
 						objectFit: 'cover',
 						filter: 'brightness(0.72) contrast(1.08) saturate(1.04)',
 					}}
@@ -159,7 +165,7 @@ export const TeaserCinematicPremium: React.FC = () => {
 								'0 0 14px rgba(255,255,255,0.08), 0 0 38px rgba(0,180,255,0.16)',
 						}}
 					>
-						DJ Hulk Sunday House Mix
+						{title}
 					</div>
 
 					<div
@@ -171,7 +177,7 @@ export const TeaserCinematicPremium: React.FC = () => {
 							color: 'rgba(255,255,255,0.88)',
 						}}
 					>
-						Checkout the full hour mix on Mixcloud
+						{subtitle}
 					</div>
 				</div>
 			</div>

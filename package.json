@@ -5,6 +5,7 @@
   "scripts": {
     "start": "remotion start",
     "build": "remotion render",
+    "teaser": "node scripts/build-teaser.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
