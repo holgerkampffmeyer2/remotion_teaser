@@ -40,13 +40,6 @@ type TeaserProps = {
 	format: 'youtube' | 'instagram';
 } & Partial<VariationProps>;
 
-const INSTAGRAM_CONFIG = {
-	titleSize: 72,
-	subtitleSize: 24,
-	visualizerMultiplier: 55,
-	barCount: 48,
-};
-
 const COLORS = [
 	{start: 'rgba(124,255,235,0.9)', mid: 'rgba(25,181,255,0.95)', end: 'rgba(122,44,255,0.95)'},
 	{start: 'rgba(255,167,71,0.9)', mid: 'rgba(255,105,180,0.95)', end: 'rgba(180,100,255,0.95)'},
@@ -62,11 +55,11 @@ const DEFAULT_VARS: VariationProps = {
 	textEffect: 'glow',
 	vignette: 0.7,
 	bgZoom: 1.08,
-	barCount: 48,
+	barCount: 128,
 	waveFrequency: 8,
-	bgBrightness: 0.72,
-	bgContrast: 1.06,
-	bgSaturate: 1.05,
+	bgBrightness: 0.3,
+	bgContrast: 1.1,
+	bgSaturate: 1.3,
 	enableLightLeaks: DEFAULT_EFFECTS.enableLightLeaks,
 	enableStarburst: DEFAULT_EFFECTS.enableStarburst,
 	lightLeaksIntensity: DEFAULT_EFFECTS.lightLeaksIntensity,
@@ -75,7 +68,7 @@ const DEFAULT_VARS: VariationProps = {
 	starburstCenterY: DEFAULT_EFFECTS.starburstCenterY,
 };
 
-export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
+export const TeaserMonoPulse: React.FC<TeaserProps> = (props) => {
 	const {
 		audioFile,
 		imageFile,
@@ -84,9 +77,6 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 		format,
 		colorPalette = DEFAULT_VARS.colorPalette,
 		speedMultiplier = DEFAULT_VARS.speedMultiplier,
-		equalizerStyle = DEFAULT_VARS.equalizerStyle,
-		textEffect = DEFAULT_VARS.textEffect,
-		vignette = DEFAULT_VARS.vignette,
 		bgZoom = DEFAULT_VARS.bgZoom,
 		barCount = DEFAULT_VARS.barCount,
 		waveFrequency = DEFAULT_VARS.waveFrequency,
@@ -102,48 +92,41 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 	} = props;
 
 	const frame = useCurrentFrame();
-	const {width, height, fps} = useVideoConfig();
+	const {fps, width, height} = useVideoConfig();
 	const audioData = useAudioData(staticFile(audioFile));
 
 	const isInstagram = format === 'instagram';
-
 	const effectiveFrame = Math.floor(frame / speedMultiplier);
-	
+
 	const titleIn = spring({
 		frame,
 		fps,
-		config: {damping: 18, stiffness: 110, mass: 0.9},
+		config: {damping: 16, stiffness: 120, mass: 0.8},
 	});
 
 	const subtitleIn = spring({
-		frame: frame - 18,
+		frame: frame - 20,
 		fps,
-		config: {damping: 20, stiffness: 90, mass: 1},
+		config: {damping: 18, stiffness: 100, mass: 0.9},
 	});
 
-	const fadeOut = interpolate(frame, [470, 600], [1, 0], {
+	const bgScale = interpolate(effectiveFrame, [0, 600], [1, bgZoom], {
+		extrapolateRight: 'clamp',
+	});
+
+	const bgPulse = 1 + Math.sin(effectiveFrame / 6) * 0.02;
+
+	const fadeOut = interpolate(frame, [520, 600], [1, 0], {
 		extrapolateLeft: 'clamp',
 		extrapolateRight: 'clamp',
 	});
 
-	const zoom = interpolate(effectiveFrame, [0, 600], [1, bgZoom], {
-		extrapolateRight: 'clamp',
-	});
+	const actualBarCount = isInstagram ? 64 : barCount;
+	let bars: number[] = Array.from({length: actualBarCount}, () => 0.08);
 
-	const driftX = interpolate(effectiveFrame, [0, 600], [-10, 10], {
-		extrapolateRight: 'clamp',
-	});
+	const beatPhase = frame % 48;
+	const beatMult = beatPhase < 12 ? beatPhase / 12 : 1;
 
-	const driftY = interpolate(effectiveFrame, [0, 600], [6, -6], {
-		extrapolateRight: 'clamp',
-	});
-
-	const actualBarCount = isInstagram ? 48 : barCount;
-	let bars: number[] = Array.from({length: actualBarCount}, () => 0.06);
-	
-	const beatPhase = frame % 60;
-	const beatMultiplier = beatPhase < 15 ? beatPhase / 15 : 1;
-	
 	if (audioData) {
 		const rawBars = visualizeAudio({
 			fps,
@@ -151,52 +134,29 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 			audioData,
 			numberOfSamples: actualBarCount,
 		});
-		bars = rawBars.map(v => v * beatMultiplier);
+		bars = rawBars.map(v => v * beatMult);
 	}
 
 	const colors = COLORS[colorPalette % COLORS.length];
+	const visualizerMultiplier = isInstagram ? 220 : 320;
 
-	const titleSize = isInstagram ? INSTAGRAM_CONFIG.titleSize : 86;
-	const subtitleSize = isInstagram ? INSTAGRAM_CONFIG.subtitleSize : 28;
-	const visualizerMultiplier = isInstagram ? INSTAGRAM_CONFIG.visualizerMultiplier : 70;
-
-	const getTextEffectStyle = () => {
-		switch (textEffect) {
-			case 'slide':
-				return {
-					transform: `translateY(${interpolate(titleIn, [0, 1], [28, 0])}px)`,
-				};
-			case 'scale':
-				return {
-					transform: `scale(${interpolate(titleIn, [0, 1], [0.9, 1])})`,
-				};
-			case 'pulse':
-				return {
-					opacity: titleIn,
-				};
-			case 'glow':
-			default:
-				return {
-					opacity: titleIn,
-					textShadow: '0 0 18px rgba(255,255,255,0.10), 0 0 42px rgba(0,180,255,0.14)',
-				};
-		}
-	};
+	const titleSize = isInstagram ? 72 : 94;
+	const subtitleSize = isInstagram ? 24 : 30;
 
 	return (
 		<AbsoluteFill
 			style={{
-				backgroundColor: '#050508',
+				backgroundColor: '#030306',
 				fontFamily: 'Inter, Arial, sans-serif',
 				overflow: 'hidden',
 				opacity: fadeOut,
 			}}
 		>
 			<Audio src={staticFile(audioFile)} />
-			
+
 			<AbsoluteFill
 				style={{
-					transform: `scale(${zoom}) translate(${driftX}px, ${driftY}px)`,
+					transform: `scale(${bgScale})`,
 				}}
 			>
 				<Img
@@ -208,45 +168,47 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 						filter: `brightness(${bgBrightness}) contrast(${bgContrast}) saturate(${bgSaturate})`,
 					}}
 				/>
+
+				{enableLightLeaks && (
+					<LightLeaks frame={frame} width={width} height={height} intensity={lightLeaksIntensity} />
+				)}
+
+				{enableStarburst && (
+					<Starburst frame={frame} width={width} height={height} intensity={starburstIntensity} centerX={starburstCenterX ?? 0.5} centerY={starburstCenterY ?? 0.3} />
+				)}
 			</AbsoluteFill>
-
-			{enableLightLeaks && (
-				<LightLeaks frame={frame} width={width} height={height} intensity={lightLeaksIntensity} />
-			)}
-
-			{enableStarburst && (
-				<Starburst frame={frame} width={width} height={height} intensity={starburstIntensity} centerX={starburstCenterX ?? 0.5} centerY={starburstCenterY ?? 0.3} />
-			)}
 
 			<AbsoluteFill
 				style={{
-					background: 'linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.28) 40%, rgba(0,0,0,0.72) 78%, rgba(0,0,0,0.9) 100%)',
+					background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.78) 82%, rgba(0,0,0,0.94) 100%)',
 				}}
 			/>
 
 			<div
 				style={{
 					position: 'absolute',
-					left: 0,
-					right: 0,
-					bottom: 110,
-					padding: '0 90px',
-					color: 'white',
+					inset: 0,
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
 				}}
 			>
 				<div
 					style={{
-						maxWidth: 1300,
-						margin: '0 auto',
-						...getTextEffectStyle(),
+						width: '100%',
+						maxWidth: isInstagram ? 800 : 1400,
+						textAlign: 'center',
+						color: 'white',
 					}}
 				>
 					<div
 						style={{
 							fontSize: titleSize,
 							fontWeight: 800,
-							letterSpacing: '-0.05em',
-							lineHeight: 0.96,
+							letterSpacing: isInstagram ? '-0.04em' : '-0.055em',
+							lineHeight: 1,
+							opacity: titleIn,
+							textShadow: '0 0 30px rgba(255,255,255,0.12), 0 0 60px rgba(0,255,255,0.18)',
 						}}
 					>
 						{title}
@@ -254,13 +216,12 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 
 					<div
 						style={{
-							marginTop: 24,
+							marginTop: 28,
 							fontSize: subtitleSize,
-							fontWeight: 400,
-							letterSpacing: '0.01em',
-							color: 'rgba(255,255,255,0.88)',
+							fontWeight: 500,
+							letterSpacing: '0.02em',
+							color: 'rgba(255,255,255,0.82)',
 							opacity: subtitleIn,
-							transform: `translateY(${interpolate(subtitleIn, [0, 1], [16, 0])}px)`,
 						}}
 					>
 						{subtitle}
@@ -268,55 +229,55 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 				</div>
 			</div>
 
-			{(
-				<div
-					style={{
-						position: 'absolute',
-						left: '50%',
-						bottom: 34,
-						transform: 'translateX(-50%)',
-						width: '82%',
-						maxWidth: 1180,
-						height: 82,
-						display: 'flex',
-						alignItems: 'flex-end',
-						gap: 4,
-						opacity: 0.85,
-						filter: 'drop-shadow(0 0 12px rgba(0,180,255,0.25))',
-					}}
-				>
-					{bars.map((v, i) => {
-						const barIndex = i / actualBarCount;
-						const bassBoost = barIndex < 0.15 ? 2.2 : barIndex < 0.3 ? 1.6 : 1;
-						const midBoost = barIndex > 0.3 && barIndex < 0.6 ? 1.3 : 1;
-						const freqBoost = Math.sin(barIndex * Math.PI) * 0.6 + 0.6;
-						const baseWave = Math.sin(frame / (waveFrequency * 1.5) + i * 0.4) * 18;
-						const heightBar = Math.max(10, v * visualizerMultiplier * bassBoost * midBoost * (0.3 + freqBoost * 0.7) + baseWave + 20);
-						return (
-							<div
-								key={i}
-								style={{
-									flex: 1,
-									height: heightBar,
-									borderRadius: 999,
-									background: `linear-gradient(180deg, ${colors.start} 0%, ${colors.mid} 48%, ${colors.end} 100%)`,
-									boxShadow: '0 0 10px rgba(0,185,255,0.28)',
-								}}
-							/>
-						);
-					})}
-				</div>
-			)}
+			<div
+				style={{
+					position: 'absolute',
+					left: '50%',
+					bottom: isInstagram ? 200 : 80,
+					transform: 'translateX(-50%)',
+					width: isInstagram ? '88%' : '82%',
+					maxWidth: isInstagram ? 700 : 1200,
+					height: isInstagram ? 140 : 180,
+					display: 'flex',
+					alignItems: 'flex-end',
+					gap: isInstagram ? 3 : 4,
+					opacity: 0.88,
+				}}
+			>
+				{bars.map((v, i) => {
+					const barPos = i / bars.length;
+					const bassImpulse = barPos < 0.08 ? 4.2 : barPos < 0.15 ? 2.6 : 1;
+					const midImpulse = barPos > 0.15 && barPos < 0.4 ? 1.9 : 1;
+					const phaseShift = i * 0.14;
+					const waveMotion = 1 + Math.sin(effectiveFrame / (waveFrequency * 1.2) + phaseShift) * 0.22;
+					const pulseMotion = 1 + Math.sin(effectiveFrame / 4 + phaseShift) * 0.16;
+					const baseH = v * visualizerMultiplier * bassImpulse * midImpulse;
+					const finalH = Math.max(16, baseH * waveMotion * pulseMotion);
+
+					return (
+						<div
+							key={i}
+							style={{
+								flex: 1,
+								height: finalH,
+								borderRadius: 999,
+								background: `linear-gradient(180deg, ${colors.start} 0%, ${colors.mid} 48%, ${colors.end} 100%)`,
+								boxShadow: `0 0 ${14 + v * 24}px rgba(0,200,255,${0.28 + v * 0.35})`,
+							}}
+						/>
+					);
+				})}
+			</div>
 
 			<div
 				style={{
 					position: 'absolute',
-					left: 90,
-					top: 70,
-					color: 'rgba(255,255,255,0.7)',
-					fontSize: 14,
-					letterSpacing: '0.35em',
+					left: isInstagram ? 40 : 60,
+					top: isInstagram ? 50 : 60,
+					fontSize: 13,
+					letterSpacing: '0.28em',
 					textTransform: 'uppercase',
+					color: 'rgba(255,255,255,0.55)',
 				}}
 			>
 				Teaser

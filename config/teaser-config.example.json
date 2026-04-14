@@ -1,0 +1,73 @@
+{
+  // === VIDEO CONTENT ===
+  "title": "DJ Hulk Sunday House Mix",
+  // Main title displayed on the video
+
+  "subtitle": "Checkout the full hour mix on Mixcloud",
+  // Subtitle shown below the title
+
+  // === TEMPLATE SELECTION ===
+  "template": "random",
+  // Which template to use for rendering
+  // Options:
+  //   "random"              - Random template each render (recommended)
+  //   "cinematic-premium"   - Full cinematic with equalizer bars
+  //   "neon-wave"           - Neon glow aesthetic with wave bars
+  //   "prism-glass"         - Glassmorphism style with device mockups
+  //   "cinematic-poster"    - Clean poster style with subtle equalizer
+  //   "mono-pulse"          - Monochrome with large equalizer
+
+  // === AUDIO SETTINGS ===
+  "startOffset": null,
+  // Start position of the 20-second audio clip
+  // Options:
+  //   null        - Random offset between 30s and (audio length - 20s)
+  //   "MM:SS"     - Specific start time, e.g. "1:30" = 90 seconds
+
+  // === VARIANTS ===
+  "variants": 1,
+  // Number of different videos to generate per mix
+  // Options: [1, 2, 3]
+  // Each variant gets different random template, colors, animations, effects
+
+  // === AUDIO CACHING ===
+  "cacheAudioClip": false,
+  // Whether to reuse existing audio clips or create new ones
+  // Options:
+  //   false - Always create new 20s audio clip
+  //   true  - Reuse existing clip if available (faster)
+
+  // === VISUAL EFFECTS ===
+  "effects": {
+    "lightLeaks": true,
+    // Light Leaks effect (warm light spots moving across the screen)
+    // Options:
+    //   true   - Always enable
+    //   false  - Always disable
+    //   "random" (default) - Randomly enable (~60% chance)
+
+    "starburst": true,
+    // Starburst effect (radiating light rays from a point)
+    // Options:
+    //   true   - Always enable
+    //   false  - Always disable
+    //   "random" (default) - Randomly enable (~40% chance)
+
+    "lightLeaksIntensity": 1.0,
+    // Intensity of light leaks effect (0.0 to 1.0)
+    // Default: 1.0
+
+    "starburstIntensity": 1.0
+    // Intensity of starburst effect (0.0 to 1.0)
+    // Default: 1.0
+  },
+
+  // === OUTPUT FORMATS ===
+  "formats": {
+    "youtube": true,
+    // Generate YouTube format (16:9, 1920x1080)
+
+    "instagram": false
+    // Generate Instagram/Reels format (9:16, 1080x1920)
+  }
+}

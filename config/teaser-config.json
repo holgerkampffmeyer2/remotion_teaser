@@ -1,8 +1,18 @@
 {
   "title": "DJ Hulk Sunday House Mix",
   "subtitle": "Checkout the full hour mix on Mixcloud",
+  "template": "prism-glass",
+  "startOffset": null,
+  "variants": 1,
+  "cacheAudioClip": false,
+  "effects": {
+    "lightLeaks": true,
+    "starburst": true,
+    "lightLeaksIntensity": 1.0,
+    "starburstIntensity": 1.0
+  },
   "formats": {
     "youtube": true,
-    "instagram": true
+    "instagram": false
   }
 }

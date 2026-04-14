@@ -3,39 +3,49 @@
 ![AI-Powered Teaser Video Generation](assets/animate.png)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Automated creation of teaser videos for DJ mixes in multiple formats.
+Automated creation of teaser videos for DJ mixes with random templates and variations.
 
 ## Features
 
-- **Automatic File Detection** - Finds MP3/PNG pairs in `public/`
-- **Multi-Format Output** - YouTube (1920×1080) and Instagram Reels (1080×1920)
-- **Audio Visualization** - Equalizer bars that react to the music
-- **Configurable Text** - Title and subtitle via JSON config
+- **5 Video Templates**: cinematic-premium, neon-wave, prism-glass, cinematic-poster, mono-pulse
+- **Random Template Selection**: Each render can use a different template
+- **Multiple Variants**: Generate 1-3 variations per mix
+- **Visual Effects**: Light Leaks and Starburst (configurable)
+- **Audio-reactive Equalizer**: Bars that react to the music
+- **Configurable Start Offset**: Set start time in MM:SS format
+- **Auto Audio Caching**: Reuse or regenerate audio clips
+- **Multi-Format Output**: YouTube (1920×1080) and Instagram Reels (1080×1920)
 
 ## Quick Start
 
 ```bash
-npm run teaser
+pnpm teaser
 ```
-
-Automatically creates videos for all detected MP3/PNG pairs.
 
 ## Project Structure
 
 ```
 animate_vid/
 ├── config/
-│   └── teaser-config.json     # Text configuration
+│   ├── teaser-config.json         # Active configuration
+│   └── teaser-config.example.json # Full reference
 ├── public/
-│   ├── DJ Hulk - Mix176_Tech House.mp3   # Source file
-│   └── Mixcloud Post Mix176.png           # Cover image
+│   ├── DJ Hulk - Mix176_Tech House.mp3   # Source audio
+│   ├── Mixcloud Post Mix176.png           # Cover image
+│   └── teaser_audio_176.mp3              # Generated audio clip
 ├── scripts/
-│   └── build-teaser.js      # Build script
+│   ├── build-teaser.js         # Build script
+│   └── build-teaser.test.js    # Tests
 ├── src/
-│   ├── Root.tsx            # Remotion root
-│   └── TeaserCinematicPremium.tsx  # Video component
+│   ├── Root.tsx               # Remotion root (5 templates)
+│   ├── Effects.tsx           # Light Leaks & Starburst
+│   ├── TeaserCinematicPremium.tsx
+│   ├── TeaserNeonWave.tsx
+│   ├── TeaserPrismGlass.tsx
+│   ├── TeaserCinematicPoster.tsx
+│   └── TeaserMonoPulse.tsx
 ├── out/
-│   └── *.mp4               # Output videos
+│   └── *.mp4                  # Output videos
 └── package.json
 ```
 
@@ -47,21 +57,65 @@ Edit `config/teaser-config.json`:
 {
   "title": "DJ Hulk Sunday House Mix",
   "subtitle": "Checkout the full hour mix on Mixcloud",
+  "template": "random",
+  "startOffset": null,
+  "variants": 1,
+  "cacheAudioClip": false,
+  "effects": {
+    "lightLeaks": true,
+    "starburst": true,
+    "lightLeaksIntensity": 1.0,
+    "starburstIntensity": 1.0
+  },
   "formats": {
     "youtube": true,
-    "instagram": true
+    "instagram": false
   }
 }
 ```
 
-### Options
+### Config Options Reference
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `title` | Main title in the video | - |
-| `subtitle` | Subtitle | - |
-| `formats.youtube` | YouTube format (16:9) | `true` |
-| `formats.instagram` | Instagram Reels format (9:16) | `true` |
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `title` | string | Main video title | - |
+| `subtitle` | string | Subtitle text | - |
+| `template` | string | Template name | `"random"` |
+| `startOffset` | string/null | Audio start time (MM:SS) | `null` |
+| `variants` | number | Number of variants (1-3) | `1` |
+| `cacheAudioClip` | boolean | Reuse audio clips | `false` |
+| `effects.lightLeaks` | boolean/string | Enable Light Leaks | `"random"` |
+| `effects.starburst` | boolean/string | Enable Starburst | `"random"` |
+| `effects.lightLeaksIntensity` | number | Intensity 0-1 | `1.0` |
+| `effects.starburstIntensity` | number | Intensity 0-1 | `1.0` |
+| `formats.youtube` | boolean | YouTube format | `true` |
+| `formats.instagram` | boolean | Instagram format | `true` |
+
+### Template Options
+
+| Value | Description |
+|-------|-------------|
+| `"random"` | Random template each render |
+| `"cinematic-premium"` | Full cinematic with equalizer bars |
+| `"neon-wave"` | Neon glow aesthetic with wave bars |
+| `"prism-glass"` | Glassmorphism style with device mockups |
+| `"cinematic-poster"` | Clean poster style with subtle equalizer |
+| `"mono-pulse"` | Monochrome with large equalizer |
+
+### Effects Options
+
+| Value | Description |
+|-------|-------------|
+| `true` | Always enable |
+| `false` | Always disable |
+| `"random"` | Randomly enable (~60% Light Leaks, ~40% Starburst) |
+
+### startOffset Options
+
+| Value | Description |
+|-------|-------------|
+| `null` | Random offset between 30s and (audio length - 20s) |
+| `"MM:SS"` | Specific start time (e.g. `"1:30"` = 90 seconds) |
 
 ## Usage
 
@@ -70,17 +124,47 @@ Edit `config/teaser-config.json`:
 1. Place MP3 file in `public/` (e.g., `DJ Hulk - Mix176_Tech House.mp3`)
 2. Place PNG cover in `public/` (e.g., `Mixcloud Post Mix176.png`)
 
-The script detects matching pairs by the number in the filename (Mix176 ↔ Mix176).
+The script detects matching pairs by the number in the filename:
+- `Mix176` ↔ `Mix176`
+- `Mix-178` ↔ `Mix178`
 
 ### Generating Videos
 
 ```bash
-npm run teaser
+pnpm teaser
 ```
 
 Output:
 - `out/DJ Hulk - Mix176_teaser.mp4` - YouTube format
 - `out/DJ Hulk - Mix176_teaser_insta.mp4` - Instagram format
+
+### Examples
+
+```json
+{
+  "template": "cinematic-premium",
+  "startOffset": "2:30",
+  "variants": 3,
+  "effects": {
+    "lightLeaks": false,
+    "starburst": true,
+    "starburstIntensity": 0.8
+  }
+}
+```
+
+## Variations System
+
+Each render gets random variations:
+
+| Variation | Range |
+|-----------|-------|
+| Color Palette | 5 options (Cyber Cyan, Sunset Pulse, Acid Green, Neon Pink, Steel Blue) |
+| Speed Multiplier | 0.8x - 1.2x |
+| Text Effect | glow, slide, scale, pulse |
+| Equalizer Style | bars, wave, mirrored, circle |
+| Vignette | 0.6 - 0.9 |
+| Background Zoom | 1.0 - 1.15 |
 
 ## Technical Details
 
@@ -94,16 +178,16 @@ Output:
 
 ## Development
 
+### Run Tests
+
+```bash
+pnpm test
+```
+
 ### Start Dev Server
 
 ```bash
-npm start
-```
-
-### Manual Render
-
-```bash
-npm run build -- TeaserCinematicPremium --output-dir out --props '{"audioFile":"...","imageFile":"...","title":"...","subtitle":"...","format":"youtube"}'
+pnpm start
 ```
 
 ## Tech Stack
@@ -111,21 +195,9 @@ npm run build -- TeaserCinematicPremium --output-dir out --props '{"audioFile":"
 - [Remotion](https://www.remotion.dev/) - Video in React
 - React 18
 - TypeScript
-- FFmpeg (for audio processing)
+- Jest (testing)
+- FFmpeg (audio processing)
 
 ## License
 
 MIT
-
----
-
-**Holger Kampffmeyer** (DJ Hulk)
-
-- Website: [holger-kampffmeyer.de](https://holger-kampffmeyer.de)
-- Email: holger.kampffmeyer+dj@gmail.com
-- Instagram: [@djhulk_de](https://instagram.com/djhulk_de)
-- YouTube: [@djhulk_de](https://youtube.com/@djhulk_de)
-- Mixcloud: [holger-kampffmeyer](https://mixcloud.com/holger-kampffmeyer)
-- LinkedIn: [holger-kampffmeyer](https://linkedin.com/in/holger-kampffmeyer-390b6789)
-
-**Note**: This tool is designed to be used with AI coding assistants.

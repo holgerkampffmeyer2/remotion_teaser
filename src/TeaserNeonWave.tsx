@@ -10,12 +10,103 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import {useAudioData, visualizeAudio} from '@remotion/media-utils';
+import {LightLeaks, Starburst, DEFAULT_EFFECTS} from './Effects';
 
-export const TeaserNeonWave: React.FC = () => {
+type VariationProps = {
+	colorPalette: number;
+	speedMultiplier: number;
+	equalizerStyle: 'bars' | 'wave' | 'mirrored' | 'circle';
+	textEffect: 'glow' | 'slide' | 'scale' | 'pulse';
+	vignette: number;
+	bgZoom: number;
+	barCount: number;
+	waveFrequency: number;
+	bgBrightness: number;
+	bgContrast: number;
+	bgSaturate: number;
+	enableLightLeaks?: boolean;
+	enableStarburst?: boolean;
+	lightLeaksIntensity?: number;
+	starburstIntensity?: number;
+	starburstCenterX?: number;
+	starburstCenterY?: number;
+};
+
+type TeaserProps = {
+	audioFile: string;
+	imageFile: string;
+	title: string;
+	subtitle: string;
+	format: 'youtube' | 'instagram';
+} & Partial<VariationProps>;
+
+const INSTAGRAM_CONFIG = {
+	titleSize: 72,
+	subtitleSize: 24,
+	visualizerMultiplier: 55,
+	barCount: 48,
+};
+
+const COLORS = [
+	{start: 'rgba(124,255,235,0.9)', mid: 'rgba(25,181,255,0.95)', end: 'rgba(122,44,255,0.95)'},
+	{start: 'rgba(255,167,71,0.9)', mid: 'rgba(255,105,180,0.95)', end: 'rgba(180,100,255,0.95)'},
+	{start: 'rgba(72,219,251,0.9)', mid: 'rgba(34,197,94,0.95)', end: 'rgba(59,130,246,0.95)'},
+	{start: 'rgba(255,20,147,0.9)', mid: 'rgba(255,0,255,0.95)', end: 'rgba(138,43,226,0.95)'},
+	{start: 'rgba(100,149,237,0.9)', mid: 'rgba(70,130,180,0.95)', end: 'rgba(30,144,255,0.95)'},
+];
+
+const DEFAULT_VARS: VariationProps = {
+	colorPalette: 0,
+	speedMultiplier: 1,
+	equalizerStyle: 'bars',
+	textEffect: 'glow',
+	vignette: 0.7,
+	bgZoom: 1.12,
+	barCount: 32,
+	waveFrequency: 8,
+	bgBrightness: 0.55,
+	bgContrast: 1.08,
+	bgSaturate: 1.15,
+	enableLightLeaks: DEFAULT_EFFECTS.enableLightLeaks,
+	enableStarburst: DEFAULT_EFFECTS.enableStarburst,
+	lightLeaksIntensity: DEFAULT_EFFECTS.lightLeaksIntensity,
+	starburstIntensity: DEFAULT_EFFECTS.starburstIntensity,
+	starburstCenterX: DEFAULT_EFFECTS.starburstCenterX,
+	starburstCenterY: DEFAULT_EFFECTS.starburstCenterY,
+};
+
+export const TeaserNeonWave: React.FC<TeaserProps> = (props) => {
+	const {
+		audioFile,
+		imageFile,
+		title,
+		subtitle,
+		format,
+		colorPalette = DEFAULT_VARS.colorPalette,
+		speedMultiplier = DEFAULT_VARS.speedMultiplier,
+		textEffect = DEFAULT_VARS.textEffect,
+		bgZoom = DEFAULT_VARS.bgZoom,
+		barCount = DEFAULT_VARS.barCount,
+		waveFrequency = DEFAULT_VARS.waveFrequency,
+		bgBrightness = DEFAULT_VARS.bgBrightness,
+		bgContrast = DEFAULT_VARS.bgContrast,
+		bgSaturate = DEFAULT_VARS.bgSaturate,
+		enableLightLeaks = DEFAULT_VARS.enableLightLeaks,
+		enableStarburst = DEFAULT_VARS.enableStarburst,
+		lightLeaksIntensity = DEFAULT_VARS.lightLeaksIntensity,
+		starburstIntensity = DEFAULT_VARS.starburstIntensity,
+		starburstCenterX = DEFAULT_VARS.starburstCenterX,
+		starburstCenterY = DEFAULT_VARS.starburstCenterY,
+	} = props;
+
 	const frame = useCurrentFrame();
 	const {fps, width, height} = useVideoConfig();
-	const audioData = useAudioData(staticFile('mix.mp3'));
+	const audioData = useAudioData(staticFile(audioFile));
 
+	const isInstagram = format === 'instagram';
+
+	const effectiveFrame = Math.floor(frame / speedMultiplier);
+	
 	const titleIn = spring({
 		frame,
 		fps,
@@ -28,15 +119,15 @@ export const TeaserNeonWave: React.FC = () => {
 		config: {damping: 18, stiffness: 100, mass: 0.9},
 	});
 
-	const bgZoom = interpolate(frame, [0, 480], [1, 1.12], {
+	const bgZoomAnim = interpolate(effectiveFrame, [0, 480], [1, bgZoom], {
 		extrapolateRight: 'clamp',
 	});
 
-	const bgPanX = interpolate(frame, [0, 480], [-12, 12], {
+	const bgPanX = interpolate(effectiveFrame, [0, 480], [-12, 12], {
 		extrapolateRight: 'clamp',
 	});
 
-	const bgPanY = interpolate(frame, [0, 480], [10, -10], {
+	const bgPanY = interpolate(effectiveFrame, [0, 480], [10, -10], {
 		extrapolateRight: 'clamp',
 	});
 
@@ -44,16 +135,46 @@ export const TeaserNeonWave: React.FC = () => {
 		extrapolateRight: 'clamp',
 	});
 
-	let bars: number[] = Array.from({length: 32}, () => 0.08);
+	const actualBarCount = isInstagram ? 32 : barCount;
+	let bars: number[] = Array.from({length: actualBarCount}, () => 0.08);
 
 	if (audioData) {
-		bars = visualizeAudio({
+		const rawBars = visualizeAudio({
 			fps,
 			frame,
 			audioData,
-			numberOfSamples: 32,
+			numberOfSamples: actualBarCount,
 		});
+		bars = rawBars;
 	}
+
+	const colors = COLORS[colorPalette % COLORS.length];
+
+	const titleSize = isInstagram ? INSTAGRAM_CONFIG.titleSize : 86;
+	const subtitleSize = isInstagram ? INSTAGRAM_CONFIG.subtitleSize : 28;
+	const visualizerMultiplier = isInstagram ? 55 : 80;
+
+	const getTextEffectStyle = () => {
+		switch (textEffect) {
+			case 'slide':
+				return {
+					transform: `translateY(${interpolate(frame, [0, 35], [20, 0])}px)`,
+				};
+			case 'scale':
+				return {
+					transform: `scale(${interpolate(titleIn, [0, 1], [0.94, 1])})`,
+				};
+			case 'pulse':
+				return {
+					textShadow: `0 0 18px rgba(0,255,255,${titleGlow})`,
+				};
+			case 'glow':
+			default:
+				return {
+					textShadow: `0 0 18px rgba(0,255,255,${titleGlow})`,
+				};
+		}
+	};
 
 	return (
 		<AbsoluteFill
@@ -63,28 +184,35 @@ export const TeaserNeonWave: React.FC = () => {
 				overflow: 'hidden',
 			}}
 		>
-			<Audio src={staticFile('mix.mp3')} />
+			<Audio src={staticFile(audioFile)} />
 			
 			<AbsoluteFill
 				style={{
-					transform: `scale(${bgZoom}) translate(${bgPanX}px, ${bgPanY}px)`,
+					transform: `scale(${bgZoomAnim}) translate(${bgPanX}px, ${bgPanY}px)`,
 				}}
 			>
 				<Img
-					src={staticFile('cover.jpg')}
+					src={staticFile(imageFile)}
 					style={{
 						width,
 						height,
 						objectFit: 'cover',
-						filter: 'brightness(0.55) saturate(1.15) contrast(1.08)',
+						filter: `brightness(${bgBrightness}) saturate(${bgSaturate}) contrast(${bgContrast})`,
 					}}
 				/>
+
+				{enableLightLeaks && (
+					<LightLeaks frame={frame} width={width} height={height} intensity={lightLeaksIntensity} />
+				)}
+
+				{enableStarburst && (
+					<Starburst frame={frame} width={width} height={height} intensity={starburstIntensity} centerX={starburstCenterX ?? 0.5} centerY={starburstCenterY ?? 0.3} />
+				)}
 			</AbsoluteFill>
 
 			<AbsoluteFill
 				style={{
-					background:
-						'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.8) 100%)',
+					background: 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.8) 100%)',
 				}}
 			/>
 
@@ -96,9 +224,6 @@ export const TeaserNeonWave: React.FC = () => {
 					alignItems: 'center',
 					justifyContent: 'center',
 					padding: '0 80px',
-					transform: `translateY(${interpolate(frame, [0, 35], [20, 0], {
-						extrapolateRight: 'clamp',
-					})}px)`,
 				}}
 			>
 				<div
@@ -107,34 +232,32 @@ export const TeaserNeonWave: React.FC = () => {
 						maxWidth: 1200,
 						textAlign: 'center',
 						color: 'white',
-						textShadow: `0 0 18px rgba(0,255,255,${titleGlow})`,
+						...getTextEffectStyle(),
 					}}
 				>
 					<div
 						style={{
-							fontSize: 86,
+							fontSize: titleSize,
 							fontWeight: 800,
 							letterSpacing: '-0.04em',
 							lineHeight: 1.02,
 							opacity: titleIn,
-							transform: `scale(${interpolate(titleIn, [0, 1], [0.94, 1])})`,
 						}}
 					>
-						DJ Hulk Sunday House Mix
+						{title}
 					</div>
 
 					<div
 						style={{
 							marginTop: 26,
-							fontSize: 28,
+							fontSize: subtitleSize,
 							fontWeight: 500,
 							letterSpacing: '0.02em',
 							color: 'rgba(255,255,255,0.88)',
 							opacity: subtitleIn,
-							transform: `translateY(${interpolate(subtitleIn, [0, 1], [16, 0])}px)`,
 						}}
 					>
-						Checkout the full hour mix on Mixcloud
+						{subtitle}
 					</div>
 				</div>
 			</div>
@@ -158,13 +281,20 @@ export const TeaserNeonWave: React.FC = () => {
 			>
 				{bars.map((v, i) => {
 					const phaseOffset = i * 0.22;
-					const pulse = 1 + Math.sin(frame / 6 + phaseOffset) * 0.04;
-					const wave = 1 + Math.sin(frame / 12 + phaseOffset * 1.5) * 0.02;
-					const h = Math.max(10, v * 160 * pulse * wave);
+					const barPosition = i / bars.length;
+					const bassBoost = barPosition < 0.12 ? 3.5 : barPosition < 0.25 ? 2.2 : 1;
+					const midBoost = barPosition > 0.25 && barPosition < 0.55 ? 1.8 : 1;
+					const pulse = 1 + Math.sin(frame / 3 + phaseOffset) * 0.22;
+					const wave = 1 + Math.sin(frame / 6 + phaseOffset * 1.5) * 0.18;
+					const heightBase = v * visualizerMultiplier * bassBoost * midBoost;
+					const heightAnim = heightBase * pulse * wave;
+					const h = Math.max(14, heightAnim);
 
-					const hueShift = interpolate(i, [0, 32], [0, 30], {
+					const hueShift = interpolate(i, [0, actualBarCount], [0, 30], {
 						extrapolateRight: 'clamp',
 					});
+
+					const baseHue = colorPalette === 1 ? 25 : colorPalette === 2 ? 175 : colorPalette === 3 ? 320 : 175;
 
 					return (
 						<div
@@ -173,9 +303,7 @@ export const TeaserNeonWave: React.FC = () => {
 								flex: 1,
 								height: h,
 								borderRadius: 999,
-								background:
-									'hsl(175, 85%, 62%)',
-								backgroundImage: `linear-gradient(180deg, hsl(${175 - hueShift}, 85%, 75%) 0%, hsl(${195 - hueShift}, 90%, 55%) 45%, hsl(${265 - hueShift}, 80%, 60%) 100%)`,
+								backgroundImage: `linear-gradient(180deg, hsl(${baseHue - hueShift}, 85%, 75%) 0%, hsl(${baseHue + 20 - hueShift}, 90%, 55%) 45%, hsl(${baseHue + 90 - hueShift}, 80%, 60%) 100%)`,
 								boxShadow: `0 0 ${12 + v * 20}px rgba(0,180,255,${0.35 + v * 0.2})`,
 							}}
 						/>
