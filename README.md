@@ -2,6 +2,8 @@
 
 ![AI-Powered Teaser Video Generation](assets/animate.png)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Remotion](https://img.shields.io/badge/Built%20with-Remotion-blue)](https://www.remotion.dev/)
+[![React](https://img.shields.io/badge/React-18-61DAFB)](https://react.dev/)
 
 Automated creation of teaser videos for DJ mixes with random templates and variations.
 
