@@ -5,6 +5,13 @@ Erzeuge 20-Sekunden-Teaser-Videos aus MP3/PNG-Dateien im Ordner `public/`.
 
 ## Schnellstart
 
+### Studio starten (Editor)
+```bash
+pnpm start
+```
+Dann im Browser: http://localhost:3000
+
+### Video rendern
 ```bash
 pnpm teaser
 ```

@@ -20,6 +20,13 @@ Automated creation of teaser videos for DJ mixes with random templates and varia
 
 ## Quick Start
 
+### Start Studio (Editor)
+```bash
+pnpm start
+```
+Then open: http://localhost:3000
+
+### Render Video
 ```bash
 pnpm teaser
 ```
