@@ -235,7 +235,7 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = (props) => {
 
 			<AbsoluteFill
 				style={{
-					boxShadow: `inset 0 0 180px rgba(0,0,0,${vignette})`,
+					boxShadow: `inset 0 0 280px rgba(0,0,0,${vignette + 0.15})`,
 				}}
 			/>
 
