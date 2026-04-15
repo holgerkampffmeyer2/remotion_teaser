@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "YouTube preview video with Remotion",
   "scripts": {
-    "start": "remotion start",
+    "start": "remotion studio src/index.tsx",
     "build": "remotion render",
     "teaser": "node scripts/build-teaser.js",
     "test": "jest"

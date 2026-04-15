@@ -44,7 +44,7 @@ const INSTAGRAM_CONFIG = {
 	titleSize: 72,
 	subtitleSize: 24,
 	visualizerMultiplier: 55,
-	barCount: 48,
+	barCount: 64,
 };
 
 const COLORS = [
@@ -62,7 +62,7 @@ const DEFAULT_VARS: VariationProps = {
 	textEffect: 'glow',
 	vignette: 0.7,
 	bgZoom: 1.08,
-	barCount: 48,
+	barCount: 64,
 	waveFrequency: 8,
 	bgBrightness: 0.72,
 	bgContrast: 1.06,
@@ -138,7 +138,7 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 		extrapolateRight: 'clamp',
 	});
 
-	const actualBarCount = isInstagram ? 48 : barCount;
+	const actualBarCount = isInstagram ? 64 : barCount;
 	let bars: number[] = Array.from({length: actualBarCount}, () => 0.06);
 	
 	const beatPhase = frame % 60;
@@ -178,7 +178,7 @@ export const TeaserCinematicPoster: React.FC<TeaserProps> = (props) => {
 			default:
 				return {
 					opacity: titleIn,
-					textShadow: '0 0 18px rgba(255,255,255,0.10), 0 0 42px rgba(0,180,255,0.14)',
+					textShadow: '0 0 35px rgba(255,255,255,0.5), 0 0 70px rgba(0,180,255,0.6), 0 0 110px rgba(0,180,255,0.4)',
 				};
 		}
 	};

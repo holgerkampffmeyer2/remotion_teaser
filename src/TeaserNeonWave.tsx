@@ -154,6 +154,12 @@ export const TeaserNeonWave: React.FC<TeaserProps> = (props) => {
 	const subtitleSize = isInstagram ? INSTAGRAM_CONFIG.subtitleSize : 28;
 	const visualizerMultiplier = isInstagram ? 55 : 80;
 
+	const getBarColor = (idx: number) => {
+		const colors = COLORS[colorPalette % COLORS.length];
+		if (idx % 2 === 0) return colors.start;
+		return colors.end;
+	};
+
 	const getTextEffectStyle = () => {
 		switch (textEffect) {
 			case 'slide':
@@ -166,12 +172,12 @@ export const TeaserNeonWave: React.FC<TeaserProps> = (props) => {
 				};
 			case 'pulse':
 				return {
-					textShadow: `0 0 18px rgba(0,255,255,${titleGlow})`,
+					textShadow: `0 0 35px rgba(0,255,255,0.8), 0 0 70px rgba(0,255,255,0.6), 0 0 110px rgba(0,255,255,0.4)`,
 				};
 			case 'glow':
 			default:
 				return {
-					textShadow: `0 0 18px rgba(0,255,255,${titleGlow})`,
+					textShadow: `0 0 35px rgba(0,255,255,0.8), 0 0 70px rgba(0,255,255,0.6), 0 0 110px rgba(0,255,255,0.4)`,
 				};
 		}
 	};
@@ -270,43 +276,55 @@ export const TeaserNeonWave: React.FC<TeaserProps> = (props) => {
 					transform: 'translateX(-50%)',
 					width: '78%',
 					maxWidth: 1100,
-					height: 180,
+					height: 360,
 					display: 'flex',
-					alignItems: 'flex-end',
-					gap: 5,
-					padding: '0 14px',
+					alignItems: 'center',
+					justifyContent: 'center',
+					gap: 3,
 					opacity: 0.9,
-					filter: 'drop-shadow(0 0 12px rgba(0,200,255,0.35))',
 				}}
 			>
 				{bars.map((v, i) => {
-					const phaseOffset = i * 0.22;
-					const barPosition = i / bars.length;
-					const bassBoost = barPosition < 0.12 ? 3.5 : barPosition < 0.25 ? 2.2 : 1;
-					const midBoost = barPosition > 0.25 && barPosition < 0.55 ? 1.8 : 1;
-					const pulse = 1 + Math.sin(frame / 3 + phaseOffset) * 0.22;
-					const wave = 1 + Math.sin(frame / 6 + phaseOffset * 1.5) * 0.18;
-					const heightBase = v * visualizerMultiplier * bassBoost * midBoost;
-					const heightAnim = heightBase * pulse * wave;
-					const h = Math.max(14, heightAnim);
-
-					const hueShift = interpolate(i, [0, actualBarCount], [0, 30], {
-						extrapolateRight: 'clamp',
-					});
-
-					const baseHue = colorPalette === 1 ? 25 : colorPalette === 2 ? 175 : colorPalette === 3 ? 320 : 175;
+					const phaseOffset = i * 0.35;
+					const waveY = Math.sin(frame / 12 + phaseOffset) * 40;
+					const barHeight = Math.max(8, v * visualizerMultiplier * 1.8);
+					const mirrorOffset = Math.sin(frame / 8 + i * 0.12) * 25;
 
 					return (
 						<div
 							key={i}
 							style={{
+								position: 'relative',
 								flex: 1,
-								height: h,
-								borderRadius: 999,
-								backgroundImage: `linear-gradient(180deg, hsl(${baseHue - hueShift}, 85%, 75%) 0%, hsl(${baseHue + 20 - hueShift}, 90%, 55%) 45%, hsl(${baseHue + 90 - hueShift}, 80%, 60%) 100%)`,
-								boxShadow: `0 0 ${12 + v * 20}px rgba(0,180,255,${0.35 + v * 0.2})`,
+								height: 360,
+								display: 'flex',
+								flexDirection: 'column',
+								alignItems: 'center',
+								justifyContent: 'center',
 							}}
-						/>
+						>
+							<div
+								style={{
+									width: '100%',
+									height: barHeight,
+									transform: `translateY(${-mirrorOffset}px)`,
+									borderRadius: 999,
+									background: `linear-gradient(180deg, ${colors.start} 0%, ${colors.mid} 40%, ${colors.end} 100%)`,
+									boxShadow: `0 0 ${8 + v * 15}px ${colors.mid}`,
+								}}
+							/>
+							<div
+								style={{
+									width: '100%',
+									height: barHeight,
+									transform: `translateY(${mirrorOffset + 8}px)`,
+									borderRadius: 999,
+									background: `linear-gradient(180deg, ${colors.end} 0%, ${colors.mid} 40%, ${colors.start} 100%)`,
+									boxShadow: `0 0 ${8 + v * 15}px ${colors.start}`,
+									opacity: 0.7,
+								}}
+							/>
+						</div>
 					);
 				})}
 			</div>

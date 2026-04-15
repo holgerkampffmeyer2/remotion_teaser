@@ -103,6 +103,16 @@ Jedes Video erhält zufällige Variationen:
 | Light Leaks | ~60% Wahrscheinlichkeit |
 | Starburst | ~40% Wahrscheinlichkeit |
 
+## Template-Eigenheiten
+
+| Template | Besonderheit |
+|----------|-------------|
+| MonoPulse | Gleichmäßige Frequenzverteilung, pulsierender Glow |
+| CinematicPoster | Drift-Animation |
+| PrismGlass | Glass-Cards, Format-Frames |
+| NeonWave | Gespiegelte Wellenform |
+| CinematicPremium | Seitliches Layout, pulsierender Glow |
+
 ## Technische Details
 
 | Parameter | Wert |

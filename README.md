@@ -160,13 +160,23 @@ Output:
 Each render gets random variations:
 
 | Variation | Range |
-|-----------|-------|
+|-----------|--------|
 | Color Palette | 5 options (Cyber Cyan, Sunset Pulse, Acid Green, Neon Pink, Steel Blue) |
 | Speed Multiplier | 0.8x - 1.2x |
 | Text Effect | glow, slide, scale, pulse |
 | Equalizer Style | bars, wave, mirrored, circle |
 | Vignette | 0.6 - 0.9 |
 | Background Zoom | 1.0 - 1.15 |
+
+## Template Features
+
+| Template | Unique Features |
+|----------|-----------------|
+| MonoPulse | Even frequency distribution, pulsing glow |
+| CinematicPoster | Drift animation |
+| PrismGlass | Glass cards, format preview frames |
+| NeonWave | Mirrored waveform |
+| CinematicPremium | Side layout, pulsing glow |
 
 ## Technical Details
 

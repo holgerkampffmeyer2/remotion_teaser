@@ -56,7 +56,7 @@ const DEFAULT_VARS: VariationProps = {
 	textEffect: 'glow',
 	vignette: 0.7,
 	bgZoom: 1.1,
-	barCount: 36,
+	barCount: 64,
 	waveFrequency: 8,
 	bgBrightness: 0.26,
 	bgContrast: 1.05,
@@ -269,7 +269,7 @@ export const TeaserPrismGlass: React.FC<TeaserProps> = (props) => {
 				return {
 					opacity: titleIn,
 					transform: `translateY(${interpolate(titleIn, [0, 1], [22, 0])}px)`,
-					textShadow: '0 0 20px rgba(255,255,255,0.08), 0 0 50px rgba(77,174,255,0.14)',
+					textShadow: '0 0 35px rgba(255,255,255,0.5), 0 0 70px rgba(77,174,255,0.6), 0 0 110px rgba(77,174,255,0.4)',
 				};
 		}
 	};

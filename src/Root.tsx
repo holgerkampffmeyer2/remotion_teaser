@@ -7,7 +7,7 @@ import {TeaserCinematicPoster} from './TeaserCinematicPoster';
 import {TeaserMonoPulse} from './TeaserMonoPulse';
 
 const DEFAULT_PROPS = {
-	audioFile: 'teaser_audio.mp3',
+	audioFile: 'teaser_audio_176.mp3',
 	imageFile: 'Mixcloud Post Mix176.png',
 	title: 'DJ Hulk Sunday House Mix',
 	subtitle: 'Checkout the full hour mix on Mixcloud',

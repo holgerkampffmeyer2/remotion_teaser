@@ -115,6 +115,7 @@ export const TeaserMonoPulse: React.FC<TeaserProps> = (props) => {
 	});
 
 	const bgPulse = 1 + Math.sin(effectiveFrame / 6) * 0.02;
+	const glowPulse = 0.4 + Math.sin(effectiveFrame / 8) * 0.3;
 
 	const fadeOut = interpolate(frame, [520, 600], [1, 0], {
 		extrapolateLeft: 'clamp',
@@ -208,7 +209,7 @@ export const TeaserMonoPulse: React.FC<TeaserProps> = (props) => {
 							letterSpacing: isInstagram ? '-0.04em' : '-0.055em',
 							lineHeight: 1,
 							opacity: titleIn,
-							textShadow: '0 0 30px rgba(255,255,255,0.12), 0 0 60px rgba(0,255,255,0.18)',
+							textShadow: `0 0 ${40 * glowPulse + 40}px rgba(255,255,255,${glowPulse + 0.3}), 0 0 ${80 * glowPulse + 40}px rgba(0,255,255,${glowPulse + 0.4}), 0 0 ${120 * glowPulse + 40}px rgba(0,255,255,${glowPulse + 0.2})`,
 						}}
 					>
 						{title}
@@ -246,13 +247,12 @@ export const TeaserMonoPulse: React.FC<TeaserProps> = (props) => {
 			>
 				{bars.map((v, i) => {
 					const barPos = i / bars.length;
-					const bassImpulse = barPos < 0.08 ? 4.2 : barPos < 0.15 ? 2.6 : 1;
-					const midImpulse = barPos > 0.15 && barPos < 0.4 ? 1.9 : 1;
-					const phaseShift = i * 0.14;
-					const waveMotion = 1 + Math.sin(effectiveFrame / (waveFrequency * 1.2) + phaseShift) * 0.22;
-					const pulseMotion = 1 + Math.sin(effectiveFrame / 4 + phaseShift) * 0.16;
-					const baseH = v * visualizerMultiplier * bassImpulse * midImpulse;
-					const finalH = Math.max(16, baseH * waveMotion * pulseMotion);
+					const freqMultiplier = barPos < 0.1 ? 1.0 : barPos < 0.25 ? 1.2 : barPos < 0.5 ? 1.5 : 1.8;
+					const phaseOffset = i * 0.22;
+					const waveOsc = 1 + Math.sin(effectiveFrame / 8 + phaseOffset) * 0.3;
+					const volumeBoost = 0.5 + v * 12;
+					const baseH = volumeBoost * freqMultiplier * visualizerMultiplier * 0.4;
+					const finalH = Math.max(12, baseH * waveOsc);
 
 					return (
 						<div

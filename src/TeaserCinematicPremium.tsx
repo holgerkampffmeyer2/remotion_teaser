@@ -123,6 +123,8 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = (props) => {
 		extrapolateRight: 'clamp',
 	});
 
+	const glowPulse = 0.4 + Math.sin(frame / 8) * 0.3;
+
 	const actualBarCount = isInstagram ? INSTAGRAM_CONFIG.barCount : barCount;
 	let bars: number[] = Array.from({length: actualBarCount}, () => 0.06);
 	
@@ -145,9 +147,7 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = (props) => {
 	const subtitleSize = isInstagram ? INSTAGRAM_CONFIG.subtitleSize : 28;
 	const visualizerMultiplier = isInstagram ? INSTAGRAM_CONFIG.visualizerMultiplier : 70;
 
-	const textBottom = isInstagram ? 280 : 108;
-	const textPadding = isInstagram ? '0 60px' : '0 90px';
-	const textMaxWidth = isInstagram ? 900 : 1320;
+	const textLeft = isInstagram ? 40 : 60;
 	const equalizerBottom = isInstagram ? 280 : 34;
 	const equalizerWidth = isInstagram ? '90%' : '82%';
 	const equalizerMaxWidth = isInstagram ? 900 : 1180;
@@ -158,7 +158,7 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = (props) => {
 		switch (textEffect) {
 			case 'slide':
 				return {
-					transform: `translateX(${textDrift}px)`,
+					transform: `translateX(${-textDrift}px)`,
 				};
 			case 'scale':
 				return {
@@ -171,8 +171,19 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = (props) => {
 			case 'glow':
 			default:
 				return {
-					textShadow: '0 0 14px rgba(255,255,255,0.08), 0 0 38px rgba(0,180,255,0.16)',
+					textShadow: `0 0 ${35 * glowPulse + 35}px rgba(255,255,255,${glowPulse + 0.3}), 0 0 ${70 * glowPulse + 35}px rgba(0,180,255,${glowPulse + 0.4}), 0 0 ${110 * glowPulse + 35}px rgba(0,180,255,${glowPulse + 0.2})`,
 				};
+		}
+	};
+
+	const getVizStyle = () => {
+		switch (equalizerStyle) {
+			case 'circle':
+				return { borderRadius: '50%' };
+			case 'mirrored':
+				return { transform: 'scaleY(-1)' };
+			default:
+				return { borderRadius: 999 };
 		}
 	};
 
@@ -231,43 +242,35 @@ export const TeaserCinematicPremium: React.FC<TeaserProps> = (props) => {
 			<div
 				style={{
 					position: 'absolute',
-					left: 0,
-					right: 0,
-					bottom: textBottom,
-					padding: textPadding,
+					left: textLeft,
+					top: '50%',
+					transform: 'translateY(-50%)',
+					maxWidth: isInstagram ? 500 : 700,
+					color: 'white',
+					...getTextEffectStyle(),
 				}}
 			>
 				<div
 					style={{
-						maxWidth: textMaxWidth,
-						margin: '0 auto',
-						color: 'white',
-						textAlign: isInstagram ? 'center' : 'left',
-						...getTextEffectStyle(),
+						fontSize: titleSize,
+						fontWeight: 800,
+						letterSpacing: '-0.055em',
+						lineHeight: 0.94,
 					}}
 				>
-					<div
-						style={{
-							fontSize: titleSize,
-							fontWeight: 800,
-							letterSpacing: '-0.055em',
-							lineHeight: 0.94,
-						}}
-					>
-						{title}
-					</div>
+					{title}
+				</div>
 
-					<div
-						style={{
-							marginTop: 22,
-							fontSize: subtitleSize,
-							fontWeight: 400,
-							letterSpacing: '0.01em',
-							color: 'rgba(255,255,255,0.88)',
-						}}
-					>
-						{subtitle}
-					</div>
+				<div
+					style={{
+						marginTop: 22,
+						fontSize: subtitleSize,
+						fontWeight: 400,
+						letterSpacing: '0.01em',
+						color: 'rgba(255,255,255,0.88)',
+					}}
+				>
+					{subtitle}
 				</div>
 			</div>
 
