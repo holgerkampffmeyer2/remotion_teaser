@@ -177,13 +177,13 @@ Each render gets random variations:
 
 ## Template Features
 
-| Template | Unique Features |
-|----------|-----------------|
-| MonoPulse | Even frequency distribution, pulsing glow |
-| CinematicPoster | Drift animation |
-| PrismGlass | Glass cards, format preview frames |
-| NeonWave | Mirrored waveform |
-| CinematicPremium | Side layout, pulsing glow |
+| Template | Layout | Visualizer | Text Effect | Special Effects |
+|----------|--------|-----------|-------------|----------------|
+| **MonoPulse** | Centered | Bars (even frequency) | Glow (pulsing) | Pulse rhythm |
+| **CinematicPoster** | Bottom-left | Bars (drift) | Glow/Slide/Scale | Drift animation |
+| **PrismGlass** | Centered + Cards | Mini-bars in frames | Glow/Slide/Scale | Glassmorphism |
+| **NeonWave** | Centered | Mirrored waveform | Glow | HSL color shift |
+| **CinematicPremium** | Side (vertical) | Bars | Glow/Slide/Scale (pulsing) | Vignette, styles |
 
 ## Technical Details
 

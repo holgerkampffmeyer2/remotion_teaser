@@ -112,13 +112,13 @@ Jedes Video erhält zufällige Variationen:
 
 ## Template-Eigenheiten
 
-| Template | Besonderheit |
-|----------|-------------|
-| MonoPulse | Gleichmäßige Frequenzverteilung, pulsierender Glow |
-| CinematicPoster | Drift-Animation |
-| PrismGlass | Glass-Cards, Format-Frames |
-| NeonWave | Gespiegelte Wellenform |
-| CinematicPremium | Seitliches Layout, pulsierender Glow |
+| Template | Layout | Visualizer | Text-Effekt | Besonderheiten |
+|----------|--------|-----------|-------------|--------------|
+| **MonoPulse** | Zentriert | Bars (gleichmäßig) | Glow (pulsierend) | Pulse-Rhythmus |
+| **CinematicPoster** | Unten links | Bars (Drift) | Glow/Slide/Scale | Drift-Animation |
+| **PrismGlass** | Zentriert + Cards | Mini-Bars in Frames | Glow/Slide/Scale | Glassmorphism |
+| **NeonWave** | Zentriert | Gespiegelt | Glow | HSL-Farbshift |
+| **CinematicPremium** | Seitlich | Bars | Glow/Slide/Scale (pulsierend) | Vignette, Styles |
 
 ## Technische Details
 
