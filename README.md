@@ -78,7 +78,7 @@ Edit `config/teaser-config.json`:
   },
   "formats": {
     "youtube": true,
-    "instagram": false
+    "instagram": true
   }
 }
 ```
